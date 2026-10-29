@@ -450,7 +450,7 @@ input{font-family:inherit}
 .kicker{font-size:calc(8.5px * var(--tscale));letter-spacing:.32em;color:var(--dim);text-transform:uppercase}
 .modal-title{
   font-family:var(--serif);font-size:calc(26px * var(--tscale));font-weight:500;letter-spacing:.13em;
-  line-height:1.35;margin:6px 0 12px;padding-right:38px;
+  line-height:1.35;margin:6px 0 12px;padding-right:38px;text-wrap:balance;
 }
 .modal-sub{font-size:calc(10px * var(--tscale));color:var(--ash);letter-spacing:.08em;margin:-7px 0 14px}
 .story{font-size:calc(13px * var(--tscale));line-height:2;color:#d7d2c6}
@@ -732,6 +732,8 @@ input{font-family:inherit}
   .boot-name input{font-size:18px}
   .modal{padding:7px}
   .modal-inner{padding:18px 16px 20px}
+  /* 手机：标题一行放得下，放不下时均分成两行，不再出现只有一个字掉行 */
+  .modal-title{font-size:calc(21px * var(--tscale));letter-spacing:.1em;line-height:1.4;padding-right:34px}
   .m-portrait{grid-template-columns:92px 1fr;gap:11px}
   .m-portrait img{width:92px;height:116px}
   .m-portrait .pname{font-size:calc(23px * var(--tscale))}
