@@ -629,9 +629,12 @@ input{font-family:inherit}
   .col.right{grid-column:3;grid-row:1 / -1}
   /* 顶栏：门牌跟在标题后，状态条单行等宽排列 */
   .door-tag{font-size:13px;padding:3px 10px;margin-left:4px;align-self:center}
-  .chips{flex-wrap:nowrap;gap:6px;overflow-x:auto;scrollbar-width:none}
+  .brand{flex-shrink:1;min-width:0}
+  .brand-sub{font-size:9px;letter-spacing:.16em;max-width:238px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chips{flex-wrap:nowrap;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1 1 0}
   .chips::-webkit-scrollbar{display:none}
   .chip{flex:1 1 0;min-width:0;justify-content:space-between;padding:4px 10px}
+  .top-actions{flex-shrink:0}
   .acts{grid-template-columns:1fr;padding:10px 12px 12px;gap:8px}
   .act{grid-template-columns:30px 1fr;gap:9px;min-height:70px;padding:9px 13px 17px}
   .act .glyph{width:30px;height:30px;font-size:12px}
@@ -1101,7 +1104,9 @@ function countClues(di){
 }
 function allClues(di){ return countClues(di) >= CLUES_PER_DOOR; }
 function clearedCount(){ return G.doors.filter(d => d.cleared).length; }
+let muteLog = false;
 function pushLog(text, cls){
+  if(muteLog) return;
   G.log.unshift({ t:text, c:cls||'', tag:'夜'+pad2(DS() ? DS().night : 1) });
   if(G.log.length > 90) G.log.pop();
 }
@@ -1115,6 +1120,7 @@ function toast(msg, kind){
 }
 function findClue(i){
   const s = DS();
+  if(muteLog) return false;
   if(s.clues[i]){ pushLog('这道命门，你已经描下来了。', 'quiet'); return false; }
   s.clues[i] = true;
   pushLog('命门 · ' + D().clues[i].t, 'clue');
@@ -2181,10 +2187,28 @@ function switchLoc(li){
   save(); render();
 }
 
+/* 行动是否绑定某条命门（从 run 里解析 findClue(n)） */
+function clueOf(a){
+  if(!a || !a.run) return -1;
+  const m = a.run.toString().match(/findClue\(\s*(\d+)\s*\)/);
+  return m ? +m[1] : -1;
+}
 function doAction(i){
   if(G.ended || G.final) return;
   const s = DS(), a = actionsFor(s.loc)[i];
   if(!a) return;
+  /* 已描下过的命门行动：不再闪屏、不再重播剧情，只结算属性数值 */
+  const ci = clueOf(a);
+  if(ci >= 0 && s.clues[ci]){
+    if(a.ap !== 0 && !spendAP()) return;
+    AUDIO.click();
+    muteLog = true;
+    try{ a.run && a.run(); }catch(e){}finally{ muteLog = false; }
+    warnObs(); save(); render();
+    if(checkFail()) return;
+    toast(a.e.replace(/\s*·\s*命门$/, '') + ' · 只结算数值', 'good');
+    return;
+  }
   if(a.meet){
     if(a.need && !a.need()){ toast(a.lock || '现在还不是时候。','bad'); return; }
     if(!spendAP()) return;
