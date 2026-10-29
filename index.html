@@ -615,9 +615,19 @@ input{font-family:inherit}
 @media (min-width:981px){
   :root{--tscale:1.2}
   body{font-size:calc(15px * var(--tscale))}
-  .grid{grid-template-columns:310px minmax(0,1fr) 336px;gap:15px}
-  .logpanel{flex:0 0 200px}
-  .act{min-height:92px}
+  .grid{
+    grid-template-columns:310px minmax(0,1fr) 336px;
+    grid-template-rows:auto minmax(0,1fr) auto;gap:15px;
+  }
+  /* 桌面端把中栏拆开，夜记挪到左栏空白处，行动选项占满中栏 */
+  .col.left,.col.center{display:contents}
+  .profile{grid-column:1;grid-row:1}
+  .logpanel{grid-column:1;grid-row:2 / -1;min-height:0}
+  .scene{grid-column:2;grid-row:1 / span 2}
+  .night-actions{grid-column:2;grid-row:3}
+  .col.right{grid-column:3;grid-row:1 / -1}
+  .acts{grid-template-columns:1fr;padding:12px 14px 14px;gap:10px}
+  .act{grid-template-columns:38px 1fr;min-height:88px;padding:13px 16px 21px}
   .boot-quote{font-size:clamp(16px,1.7vw,20px)}
   /* 小字统一提亮一倍半左右，避免 8~11px 的标签在电脑上仍然看不清 */
   .boot-kicker,.boot-en{font-size:13.5px}
