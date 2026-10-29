@@ -1101,6 +1101,9 @@ function D(){ return DOORS[G.door] || DOORS[3]; }
 function DS(){ return G.doors[G.door] || G.doors[3]; }
 function fillName(s){ return String(s).replace(/\{NAME\}/g, esc((G && G.name) || '林雨')); }
 function addStat(k,v){ G.stats[k] = clamp(G.stats[k] + v, 0, 100); }
+/* 每进一扇门（副本）三个数值回到初始，避免打到后面全满 */
+const BASE_STATS = { clarity:56, nerve:44, insight:46 };
+function resetRunStats(){ G.stats = { clarity:BASE_STATS.clarity, nerve:BASE_STATS.nerve, insight:BASE_STATS.insight }; }
 function addObs(v){ const s = DS(); s.obs = clamp(s.obs + v, 0, 100); try{ AUDIO.sync(s.obs); }catch(e){} }
 function countClues(di){
   const s = G.doors[di == null ? G.door : di];
@@ -2355,6 +2358,7 @@ function advanceDoor(){
   G.door = i + 1;
   G.ap = MAX_AP;
   DS().loc = 0;
+  resetRunStats();
   save(); render(); doorIntro();
 }
 
@@ -3241,7 +3245,7 @@ function boot(){
     if(i < 0 || i === G.door) return;
     const unlocked = G.doors[i].cleared || i === 0 || G.doors[i - 1].cleared;
     if(!unlocked){ toast('前一扇门还封着。','bad'); return; }
-    G.door = i; G.ap = MAX_AP; DS().loc = 0;
+    G.door = i; G.ap = MAX_AP; DS().loc = 0; resetRunStats();
     save(); render(); doorIntro();
   };
   $('#clues').onclick = e => {
