@@ -2372,15 +2372,59 @@ function advanceDoor(){
 }
 
 /* ---------------- 夜 ---------------- */
+/* 今夜小结：引子、正文、状态提示都不重复 */
+const NIGHT_OPENERS = [
+  '雨没有停。',
+  '雨小了一阵，又下大了。',
+  '楼道灯闪了两下才亮。',
+  '风从门缝里钻进来，像一声很长的叹气。',
+  '你数着雨点，数到一半就忘了。',
+  '远处钟响，没人数清是几下。'
+];
+function nightOpener(s){
+  if(!s.openSeen) s.openSeen = [];
+  let pool = NIGHT_OPENERS.map((_, i) => i).filter(i => s.openSeen.indexOf(i) < 0);
+  if(!pool.length){
+    s.openSeen = [];
+    pool = NIGHT_OPENERS.map((_, i) => i);
+    if(NIGHT_OPENERS.length > 1 && s.lop != null) pool = pool.filter(i => i !== s.lop);
+  }
+  const i = pick(pool);
+  s.openSeen.push(i); s.lop = i;
+  return NIGHT_OPENERS[i];
+}
+function nightLine(s){
+  const lines = NIGHT_LINES[G.door] || [];
+  if(!lines.length) return '';
+  const seen = (s.nrep || []).filter(i => i >= 0 && i < lines.length);
+  let pool = lines.map((_, i) => i).filter(i => seen.indexOf(i) < 0);
+  if(!pool.length){
+    pool = lines.map((_, i) => i);
+    if(lines.length > 1 && s.lnl != null && s.lnl < lines.length) pool = pool.filter(i => i !== s.lnl);
+  }
+  const i = pick(pool);
+  s.nrep = seen.concat(i).filter((v, k, arr) => arr.indexOf(v) === k);
+  s.lnl = i;
+  return lines[i];
+}
+function nightMood(s){
+  if(s.obs >= 80) return '执念已经压到喉咙口，你说话时能听见别人的回声。';
+  if(s.obs >= 60) return '镜子里的人比你慢半拍才抬头，你假装没看见。';
+  if(G.stats.clarity <= 25) return '清醒只剩一线，你开始分不清哪句是他说的。';
+  if(G.ap <= 1) return '行动力见底，剩下的路只能靠判断。';
+  return '';
+}
 function nightReport(){
   const s = DS(), d = D();
   const total = G.doors.reduce((n, x) => n + x.clues.filter(Boolean).length, 0);
+  const mood = nightMood(s);
   openLayer(`
     <div class="kicker">NIGHT ${pad2(s.night)} · ${d.place}</div>
     <div class="modal-title">今夜小结</div>
     <div class="story">
-      <p class="quote-line">第 ${s.night} 夜，雨没有停。</p>
-      <p>${NIGHT_LINES[G.door][(s.night - 1) % NIGHT_LINES[G.door].length]}</p>
+      <p class="quote-line">第 ${s.night} 夜，${nightOpener(s)}</p>
+      <p>${nightLine(s)}</p>
+      ${mood ? `<p class="system">${mood}</p>` : ''}
       <p class="system">行动力剩余 ${G.ap} / ${MAX_AP} · 执念 ${s.obs} · 命门 ${s.clues.filter(Boolean).length} / ${s.clues.length} · 已收回命门 ${total} 条</p>
     </div>
     <div class="modal-actions">
@@ -2401,7 +2445,8 @@ function nextNight(){
   s.night++;
   G.ap = MAX_AP;
   addObs(4 + G.door);
-  pushLog('第 ' + s.night + ' 夜。' + pick(NIGHT_LINES[G.door]), 'quiet');
+  const nl = NIGHT_LINES[G.door] || [];
+  if(nl.length) pushLog('第 ' + s.night + ' 夜。' + nl[(s.night - 1) % nl.length], 'quiet');
   save(); render();
   toast('第 ' + s.night + ' 夜 · 行动力已恢复','good');
   warnObs();
