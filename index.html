@@ -2499,14 +2499,16 @@ function triggerSudden(){
   if(!G || G.ended || G.final || layerOn) return;
   const d = D(), list = d.sudden || [];
   if(!list.length) return;
-  suddenLock = true;
-  /* 不连续两次抽到同一条突发 */
+  /* 同一扇门里，突发剧情不重复：抽过的就不再抽 */
   const s = DS();
-  let idx = Math.floor(Math.random() * list.length);
-  if(list.length > 1 && idx === s.lastSudden){
-    idx = (idx + 1 + Math.floor(Math.random() * (list.length - 1))) % list.length;
-  }
-  s.lastSudden = idx;
+  if(!s.suddenSeen) s.suddenSeen = [];
+  const seen = s.suddenSeen.filter(i => i >= 0 && i < list.length);
+  const pool = list.map((_, i) => i).filter(i => seen.indexOf(i) < 0);
+  if(!pool.length) return;
+  suddenLock = true;
+  const idx = pool[Math.floor(Math.random() * pool.length)];
+  seen.push(idx);
+  s.suddenSeen = seen;
   const ev = list[idx];
   jumpscare(ev.words);
   if(ev.eff) applyEff(ev.eff);
