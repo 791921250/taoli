@@ -627,6 +627,11 @@ input{font-family:inherit}
   .scene{grid-column:2;grid-row:1 / span 2}
   .night-actions{grid-column:2;grid-row:3}
   .col.right{grid-column:3;grid-row:1 / -1}
+  /* 顶栏：门牌跟在标题后，状态条单行等宽排列 */
+  .door-tag{font-size:13px;padding:3px 10px;margin-left:4px;align-self:center}
+  .chips{flex-wrap:nowrap;gap:6px;overflow-x:auto;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:1 1 0;min-width:0;justify-content:space-between;padding:4px 10px}
   .acts{grid-template-columns:1fr;padding:10px 12px 12px;gap:8px}
   .act{grid-template-columns:30px 1fr;gap:9px;min-height:70px;padding:9px 13px 17px}
   .act .glyph{width:30px;height:30px;font-size:12px}
@@ -777,8 +782,8 @@ input{font-family:inherit}
         <div class="brand-title">请逃离</div>
         <div class="brand-sub">PLEASE ESCAPE · FOUR DOORS</div>
       </div>
+      <div class="door-tag" id="doorTag">门 · 壹</div>
     </div>
-    <div class="door-tag" id="doorTag">门 · 壹</div>
     <div class="chips" id="chips"></div>
     <div class="top-actions">
       <button class="icon-btn" id="btnSound">声 · 关</button>
