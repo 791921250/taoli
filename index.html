@@ -2673,12 +2673,33 @@ function showEnding(key){
 let layerCur = null;
 let layerStack = [];
 
+/* 弹窗标题自适应：超过一行就逐级缩小，直到一行放得下或到下限 */
+function fitTitles(){
+  const body = $('#modalBody');
+  if(!body) return;
+  body.querySelectorAll('.modal-title').forEach(el => {
+    el.style.fontSize = '';
+    let size = parseFloat(getComputedStyle(el).fontSize) || 26;
+    const min = Math.max(15, Math.round(size * 0.62));
+    for(let guard = 0; guard < 20; guard++){
+      const cs = getComputedStyle(el);
+      const lh = parseFloat(cs.lineHeight) || size * 1.4;
+      if(el.getBoundingClientRect().height <= lh * 1.6) break;
+      if(size <= min) break;
+      size -= 1;
+      el.style.fontSize = size + 'px';
+    }
+  });
+}
+window.addEventListener('resize', () => { if(layerOn) fitTitles(); });
+
 function paintLayer(html){
   $('#modalBody').innerHTML = html;
   const head = $('#modalHead');
   if(head) head.innerHTML = '';
   $('#layer').classList.add('show');
   layerOn = true;
+  fitTitles();
   const modal = $('#layer .modal');
   if(modal) modal.scrollTop = 0;
   AUDIO.click();
